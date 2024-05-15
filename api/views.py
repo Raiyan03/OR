@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 # Create your views here.
 
 def index(request):
@@ -14,3 +14,9 @@ def index(request):
     <html>
     '''
     return HttpResponse(html)
+
+def greet(request):
+    #Guest incase no params is passed 
+    name = request.GET.get('name', 'Guest')
+    return JsonResponse({ 'response': name})
+
