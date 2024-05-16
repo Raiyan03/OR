@@ -9,14 +9,3 @@ immutabledict==4.2.0
 marshmallow==3.21.2
 numpy==1.26.4
 ortools==9.10.4067
-packaging==24.0
-pandas==2.2.2
-platformdirs==4.2.2
-protobuf==5.26.1
-python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
-pytz==2024.1
-six==1.16.0
-sqlparse==0.5.0
-tzdata==2024.1
-virtualenv==20.26.2
