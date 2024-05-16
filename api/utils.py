@@ -9,6 +9,8 @@ class Employee:
 
 
 def getSchedule(employee_json, shifts_json, shift_requests):
+
+    ## This function is derived from the Google OR tools which is meant for nurse scheduling https://developers.google.com/optimization/scheduling/employee_scheduling#c_4
     employee = [Employee(emp["name"], emp["shiftPref"]) for emp in employee_json]
     shifts = shifts_json
     shift_requests = shift_requests
