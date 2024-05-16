@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from api.utils import generateSchTable, getSchedule
 import json
 
 def index(request):
@@ -27,10 +28,17 @@ def greet(request):
 def schedule(request):
     try:
         data = json.loads(request.body)
-        req = data.get('data')
+        emp = data.get('employees')
+        print(emp)
+        shift = data.get('shifts')
+        print(shift)
+        shiftTable = generateSchTable(emp, shift)
+        schedule = getSchedule(emp, shift, shiftTable)
+        # print(schedule)
+        # print(shiftTable)
         return JsonResponse({
             'response': 'Data sent succesfyully',
-            'data' : req
+            'data' : schedule,
         })
     except:
         print("Error occured")

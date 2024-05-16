@@ -1,11 +1,17 @@
-Employee = {
-    
-}
+from ortools.sat.python import cp_model
+import json
 
-def main(employee_json, shifts_json, shift_requests_json):
+
+class Employee:
+    def __init__(self, name, shiftPref):
+        self.emp_name = name
+        self.shiftPref = shiftPref
+
+
+def getSchedule(employee_json, shifts_json, shift_requests):
     employee = [Employee(emp["name"], emp["shiftPref"]) for emp in employee_json]
     shifts = shifts_json
-    shift_requests = shift_requests_json
+    shift_requests = shift_requests
 
     num_employee = len(employee)
     num_shifts = len(shifts)
@@ -81,4 +87,33 @@ def main(employee_json, shifts_json, shift_requests_json):
         "wall_time": solver.WallTime()
     }
 
-    return json.dumps(result, indent=4)
+    return result
+
+
+def generateShiftArray(num_shift):
+    array = [0] * num_shift
+    return array
+
+def generateSchTable(employees, shifts):
+    # print(f"Generating shift table for \n {employees}")
+    num_shifts = len(shifts)
+    shiftReq = []
+    
+    for emp in range(len(employees)):
+        # print(f"\nGenerating shift table for {employees[emp]}")
+        empArray = []
+        shiftDict = employees[emp]['shiftPref']
+        # print(f"\nShift preference {shiftDict}")
+        
+        for day in shiftDict:
+            shift = generateShiftArray(num_shifts)
+            if shiftDict[day] == "any":
+                empArray.append(shift)
+            else:
+                indx = shiftDict[day]
+                shift[indx] = 1
+                empArray.append(shift)
+                
+        shiftReq.append(empArray)
+    
+    return shiftReq
