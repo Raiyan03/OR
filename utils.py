@@ -8,12 +8,12 @@ class Employee:
         self.shiftPref = shiftPref
 
 
-def getSchedule(employee_json, shifts_json, shift_requests):
+def getSchedule(employee_json, shifts_json, shift_requests, high_traffic):
 
-    ## This function is derived from the Google OR tools which is meant for nurse scheduling https://developers.google.com/optimization/scheduling/employee_scheduling#c_4
+    ## This function is derived from the Google OR tools which is meant for nurse scheduling
+    day_mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
     employee = [Employee(emp["name"], emp["shiftPref"]) for emp in employee_json]
     shifts = shifts_json
-    shift_requests = shift_requests
 
     num_employee = len(employee)
     num_shifts = len(shifts)
@@ -30,17 +30,17 @@ def getSchedule(employee_json, shifts_json, shift_requests):
     for n in all_employee:
         for d in all_days:
             for s in all_shifts:
-                shifts_var[(n, d, s)] = model.new_bool_var(f"shift_n{n}_d{d}_s{s}")
+                shifts_var[(n, d, s)] = model.NewBoolVar(f"shift_n{n}_d{d}_s{s}")
 
     # Each shift is assigned to exactly one employee.
     for d in all_days:
         for s in all_shifts:
-            model.add_exactly_one(shifts_var[(n, d, s)] for n in all_employee)
+            model.AddExactlyOne(shifts_var[(n, d, s)] for n in all_employee)
 
     # Each employee works at most one shift per day.
     for n in all_employee:
         for d in all_days:
-            model.add_at_most_one(shifts_var[(n, d, s)] for s in all_shifts)
+            model.AddAtMostOne(shifts_var[(n, d, s)] for s in all_shifts)
 
     # Distribute shifts evenly.
     min_shifts_per_employee = (num_shifts * num_days) // num_employee
@@ -48,11 +48,17 @@ def getSchedule(employee_json, shifts_json, shift_requests):
 
     for n in all_employee:
         num_shifts_worked = sum(shifts_var[(n, d, s)] for d in all_days for s in all_shifts)
-        model.add(min_shifts_per_employee <= num_shifts_worked)
-        model.add(num_shifts_worked <= max_shifts_per_employee)
+        model.Add(min_shifts_per_employee <= num_shifts_worked)
+        model.Add(num_shifts_worked <= max_shifts_per_employee)
+
+    # Add constraints for high traffic shifts
+    for ht in high_traffic:
+        d = day_mapping[ht["day"]]
+        s = ht["shift"]
+        model.Add(sum(shifts_var[(n, d, s)] for n in all_employee) == 2)
 
     # Maximize the number of fulfilled shift requests.
-    model.maximize(
+    model.Maximize(
         sum(
             shift_requests[n][d][s] * shifts_var[(n, d, s)]
             for n in all_employee
@@ -63,7 +69,7 @@ def getSchedule(employee_json, shifts_json, shift_requests):
 
     # Creates the solver and solves the model.
     solver = cp_model.CpSolver()
-    status = solver.solve(model)
+    status = solver.Solve(model)
 
     result = {"schedule": []}
     if status == cp_model.OPTIMAL:
@@ -71,7 +77,7 @@ def getSchedule(employee_json, shifts_json, shift_requests):
             day_schedule = {"day": d, "shifts": []}
             for n in all_employee:
                 for s in all_shifts:
-                    if solver.value(shifts_var[(n, d, s)]) == 1:
+                    if solver.Value(shifts_var[(n, d, s)]) == 1:
                         shift_detail = {
                             "employee": employee[n].emp_name,
                             "shift": shifts[s],
@@ -97,25 +103,22 @@ def generateShiftArray(num_shift):
     return array
 
 def generateSchTable(employees, shifts):
-    # print(f"Generating shift table for \n {employees}")
+    day_mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
     num_shifts = len(shifts)
     shiftReq = []
-    
     for emp in range(len(employees)):
-        # print(f"\nGenerating shift table for {employees[emp]}")
         empArray = []
         shiftDict = employees[emp]['shiftPref']
-        # print(f"\nShift preference {shiftDict}")
-        
-        for day in shiftDict:
+        for day in day_mapping:
             shift = generateShiftArray(num_shifts)
-            if shiftDict[day] == "any":
-                empArray.append(shift)
+            if day in shiftDict:
+                if shiftDict[day] == "any":
+                    empArray.append(shift)
+                else:
+                    indx = shiftDict[day]
+                    shift[indx] = 1
+                    empArray.append(shift)
             else:
-                indx = shiftDict[day]
-                shift[indx] = 1
                 empArray.append(shift)
-                
         shiftReq.append(empArray)
-    
     return shiftReq
