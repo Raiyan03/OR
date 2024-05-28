@@ -6,6 +6,11 @@ class Employee:
         self.emp_name = name
         self.shiftPref = shiftPref
 
+""" 
+This function is sourced from google OR-Tools examples https://developers.google.com/optimization/scheduling/employee_scheduling#python_21 and optimized using ChatGPT 4.0
+
+prompt: ".. entire code snippet from undistributedUtils.py .. 'fix the code of taking unavailable shifts into account in the model.'"
+"""
 def getSchedule(employee_json, shifts_json, shift_requests):
     employees = [Employee(emp["name"], emp["shiftPref"]) for emp in employee_json]
     shifts = shifts_json
@@ -90,6 +95,12 @@ def generateShiftArray(num_shifts):
 
 def generateUnavailableArray(num_shifts):
     return [-1] * num_shifts
+
+""" 
+This function is self written but optimized using ChatGPT 4.0 
+
+prompt: ".. entire code snippet from undistributedUtils.py .. 'fix the code of taking unavailable shifts into account in the model.'"
+"""
 
 def generateSchTable(employees, shifts):
     num_shifts = len(shifts)
