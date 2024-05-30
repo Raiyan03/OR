@@ -104,20 +104,22 @@ prompt: ".. entire code snippet from undistributedUtils.py .. 'fix the code of t
 
 def generateSchTable(employees, shifts):
     num_shifts = len(shifts)
-    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days_of_week = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
     shiftReq = []
 
     for employee in employees:
         empArray = []
         for day in days_of_week:
-            shift_pref = employee['shiftPref'].get(day, "any")  # Default to "any" if not specified
+            # shift_pref = employee['shiftPref'].get(day, "any")  # Default to "any" if not specified
+            shift_pref = employee['shiftPref'].get(day, "any")
+            print(shift_pref)
             if shift_pref == "any":
                 empArray.append(generateShiftArray(num_shifts))
             elif shift_pref == "NA":
                 empArray.append(generateUnavailableArray(num_shifts))
             else:
                 shift_array = generateShiftArray(num_shifts)
-                shift_array[shift_pref] = 1
+                shift_array[int(shift_pref)] = 1
                 empArray.append(shift_array)
         shiftReq.append(empArray)
 

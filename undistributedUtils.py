@@ -16,7 +16,7 @@ def generateSchTable(employee_json, shifts):
     num_shifts = len(shifts)
     shift_requests = [[[0]*num_shifts for _ in range(num_days)] for _ in employee_json]
 
-    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
     for i, emp in enumerate(employee_json):
         for j, day in enumerate(days_of_week):
@@ -27,7 +27,7 @@ def generateSchTable(employee_json, shifts):
                 shift_requests[i][j] = [1] * num_shifts  # Flexible for all shifts
             else:
                 shift_requests[i][j] = [0] * num_shifts
-                shift_requests[i][j][pref] = 1  # Preferred shift
+                shift_requests[i][j][int(pref)] = 1  # Preferred shift
 
     return shift_requests
 
