@@ -12,7 +12,7 @@ def root():
     return{"hello": "world"}
 
 
-@app.post("/schedule")
+@app.post("/scheduleJason")
 def Schedule(req: req):
     employees = req.employees
     shifts = req.shifts
