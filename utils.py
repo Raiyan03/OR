@@ -145,7 +145,7 @@ def generateSchTable(employees, shifts):
                     empArray.append(shift)
                 else:
                     #ChatGPT Prompt: How does line 147 connect to the shiftDict variable? Explain logic
-                    indx = shiftDict[day]
+                    indx = int(shiftDict[day])
                     if 0 <= indx < num_shifts:
                         shift[indx] = 1
                     else:
