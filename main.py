@@ -14,22 +14,8 @@ def root():
     return{"hello": "world"}
 
 
-@app.post("/schedule")
+@app.post("/scheduleJason")
 def Schedule(req: req):
-    """
-    Generate Equally Distributed Schedule.
-
-    This endpoint generates a schedule where shifts are equally distributed 
-    among employees based on their preferences. Unavailability ('NA') is 
-    respected to ensure employees are not scheduled for shifts they cannot work.
-
-    Args:
-        req (RequestBody): The request body containing the list of employees and shifts.
-
-    Returns:
-        dict: A dictionary containing the generated schedule, objective value, 
-        and solver statistics.
-    """
     employees = req.employees
     shifts = req.shifts
     schTable = generateSchTable(employees, shifts)
