@@ -1,5 +1,6 @@
 from ortools.sat.python import cp_model
 import json
+from helper import totalHours
 
 class Employee:
     def __init__(self, name, shiftPref):
@@ -93,18 +94,26 @@ def undistGetSchedule(employee_json, shifts_json):
     print("Unknown:", status == cp_model.UNKNOWN)
 
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        employee_hours = {emp.emp_name: 0 for emp in employees}
+        
         for d in all_days:
             day_schedule = {"day": d, "shifts": []}
             for n in all_employees:
                 for s in all_shifts:
                     if solver.value(shifts_var[(n, d, s)]) == 1:
+                        shift_start, shift_end = shifts[s]
+                        shift_hours = totalHours(shift_start, shift_end)
+                        employee_hours[employees[n].emp_name] += shift_hours
+                        
                         shift_detail = {
                             "employee": employees[n].emp_name,
-                            "shift": shifts[s],
-                            "requested": shift_requests[n][d][s] == 1
+                            "shift": (shift_start, shift_end),
+                            "requested": shift_requests[n][d][s] == 1,
+                            "hours": shift_hours
                         }
                         day_schedule["shifts"].append(shift_detail)
             result["schedule"].append(day_schedule)
+        result["total_hours_per_employee"] = employee_hours
         result["objective_value"] = solver.ObjectiveValue()
     else:
         result["error"] = "No optimal solution found!"
