@@ -8,6 +8,7 @@ app = FastAPI()
 class req(BaseModel):
     employees : list
     shifts : list
+    hour_bank : int
 
 @app.get("/")
 def root():
@@ -18,8 +19,9 @@ def root():
 def Schedule(req: req):
     employees = req.employees
     shifts = req.shifts
+    hour_bank = req.hour_bank
     schTable = generateSchTable(employees, shifts)
-    schedule = getSchedule(employees, shifts, schTable)
+    schedule = getSchedule(employees, shifts, schTable, hour_bank)
     return schedule
 
 @app.post("/undistributed-schedule")
