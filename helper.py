@@ -9,4 +9,4 @@ def totalHours(fromTime, toTime):
     time2 = intoTime(toTime)
 
     hour_diff = time2 - time1
-    return hour_diff.total_seconds() / 3600
+    return int(hour_diff.total_seconds() / 3600)

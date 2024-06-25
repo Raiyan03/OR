@@ -8,6 +8,7 @@ app = FastAPI()
 class req(BaseModel):
     employees : list
     shifts : list
+    hour_bank : int
 
 @app.get("/")
 def root():
