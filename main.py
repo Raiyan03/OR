@@ -39,5 +39,6 @@ def Schedule(req: req):
     """
     employees = req.employees
     shifts = req.shifts
-    schedule = undistGetSchedule(employees, shifts)
+    hour_bank = req.hour_bank
+    schedule = undistGetSchedule(employees, shifts, hour_bank)
     return schedule
