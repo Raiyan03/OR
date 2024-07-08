@@ -7,9 +7,9 @@ class Employee:
         self.shiftPref = shiftPref
 
 def totalHours(start, end):
-    return (end - start) / 3600000
+    return (end - start) / (1000 * 60 * 60)
 
-def getSchedule(employee_json, shifts_json, shift_requests, hour_bank):
+def getSchedule(employee_json, shifts_json, shift_requests, hour_bank, flex_hours):
     day_mapping = {
         "Sun": 0,
         "Mon": 1,
@@ -85,7 +85,7 @@ def getSchedule(employee_json, shifts_json, shift_requests, hour_bank):
                     if solver.Value(shifts_var[(n, d, s)]) == 1:
                         shift_start, shift_end = shifts[s]
                         shift_hours = totalHours(shift_start, shift_end)
-                        if result["remaining_hour_bank"] - shift_hours >= 0:
+                        if result["remaining_hour_bank"] - shift_hours >= flex_hours:
                             employee_hours[employee[n].emp_name] += shift_hours
 
                             shift_detail = {
@@ -110,7 +110,7 @@ def getSchedule(employee_json, shifts_json, shift_requests, hour_bank):
                     if n not in assigned_employees:
                         shift_start, shift_end = shifts[s]
                         shift_hours = totalHours(shift_start, shift_end)
-                        if result["remaining_hour_bank"] - shift_hours >= 0:
+                        if result["remaining_hour_bank"] - shift_hours >= flex_hours:
                             shift_requested = shift_requests[n][d][s] == 1
                             any_shift_requested = any(shift_requests[n][d][x] == 1 for x in range(num_shifts))
                             shift_detail = {
@@ -170,3 +170,6 @@ def generateSchTable(employees, shifts):
                 empArray.append(shift)
         shiftReq.append(empArray)
     return shiftReq
+
+
+
