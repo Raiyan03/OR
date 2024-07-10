@@ -43,7 +43,8 @@ def Schedule(req: req):
     employees = req.employees
     shifts = req.shifts
     hour_bank = req.hour_bank
+    flex_hours = req.flex_hours
     schTable = TestgenerateSchTable(employees, shifts)
-    schedule = TestgetSchedule(employees, shifts, schTable, hour_bank)
+    schedule = TestgetSchedule(employees, shifts, schTable, hour_bank, flex_hours)
     return schedule
 

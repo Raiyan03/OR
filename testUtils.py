@@ -2,19 +2,20 @@ from ortools.sat.python import cp_model
 import json
 
 class Employee:
-    def __init__(self, name, shiftPref, status, role="employee"):
+    def __init__(self, name, shiftPref, status, id, role="employee"):
         self.emp_name = name
         self.shiftPref = shiftPref
         self.status = status
-        self.role = role  # Include role to distinguish supervisors
+        self.role = role
+        self.emp_id = id  # Store employee ID
 
 def totalHours(start, end):
     return int((end - start) / 3600000)
 
-def TestgetSchedule(employee_json, shifts_json, shift_requests, hour_bank):
+def TestgetSchedule(employee_json, shifts_json, shift_requests, hour_bank, flex_hours):
     employee = [
-        Employee(emp["name"], emp["shiftPref"], emp["status"], emp.get("role", "employee"))
-        for emp in employee_json
+    Employee(emp["name"], emp["shiftPref"], emp["status"], emp["id"], emp.get("role", "employee"))
+    for emp in employee_json
     ]
     shifts = shifts_json
 
@@ -75,9 +76,16 @@ def TestgetSchedule(employee_json, shifts_json, shift_requests, hour_bank):
                     if solver.Value(shifts_var[(n, d, s)]) == 1:
                         shift_start, shift_end = shifts[s]
                         shift_hours = totalHours(shift_start, shift_end)
-                        if result["remaining_hour_bank"] - shift_hours >= 0:
+                        if result["remaining_hour_bank"] - shift_hours >= flex_hours:
                             employee_hours[employee[n].emp_name] += shift_hours
-                            shift_detail = {"employee": employee[n].emp_name, "shift": shifts[s], "requested": shift_requests[n][d][s] == 1, "hours": shift_hours}
+                            shift_detail = {
+                                "id": employee[n].emp_id,  # Include employee ID in output
+                                "employee": employee[n].emp_name,
+                                "shift": shifts[s],
+                                "requested": shift_requests[n][d][s] == 1,
+                                "hours": shift_hours
+                            }
+
                             day_schedule["shifts"].append(shift_detail)
                             result["remaining_hour_bank"] -= shift_hours
                         else:
