@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from utils import generateSchTable, getSchedule
-from testUtils import TestgetSchedule, TestgenerateSchTable
+from undistributedUtils import undistGetSchedule
 
 app = FastAPI()
 
-class req(BaseModel):
+class Req(BaseModel):
     employees: list
     shifts: list
     hour_bank: int
@@ -16,7 +16,7 @@ def root():
     return {"hello": "world"}
 
 @app.post("/scheduleJason")
-def Schedule(req: req):
+def schedule(req: Req):
     employees = req.employees
     shifts = req.shifts
     hour_bank = req.hour_bank
@@ -26,25 +26,13 @@ def Schedule(req: req):
     return schedule
 
 @app.post("/undistributed-schedule")
-def Schedule(req: req):
+def undist_schedule(req: Req):
     """
     Generate Schedule Without Equal Distribution.
-
-    This endpoint generates a schedule without ensuring equal distribution of 
-    shifts among employees. It focuses on covering all shifts based on employee 
-    availability and preferences, without prioritizing equal shift distribution.
-
-    Args:
-        req (RequestBody): The request body containing the list of employees and shifts.
-
-    Returns:
-        dict: A dictionary containing the generated schedule.
     """
     employees = req.employees
     shifts = req.shifts
-    hour_bank = req.hour_bank
-    flex_hours = req.flex_hours
-    schTable = TestgenerateSchTable(employees, shifts)
-    schedule = TestgetSchedule(employees, shifts, schTable, hour_bank, flex_hours)
+    schedule = undistGetSchedule(employees, shifts)
     return schedule
+
 
