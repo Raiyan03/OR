@@ -2,9 +2,10 @@ from ortools.sat.python import cp_model
 import json
 
 class Employee:
-    def __init__(self, name, shiftPref):
+    def __init__(self, name, shiftPref, notAvailable=None):
         self.emp_name = name
         self.shiftPref = shiftPref
+        self.notAvailable = notAvailable if notAvailable else {}
 
 def totalHours(start, end):
     return (end - start) / (1000 * 60 * 60)
@@ -19,9 +20,8 @@ def getSchedule(employee_json, shifts_json, shift_requests, hour_bank, flex_hour
         "Fri": 5,
         "Sat": 6
     }
-    employee = [Employee(emp["name"], emp["shiftPref"]) for emp in employee_json]
+    employee = [Employee(emp["name"], emp["shiftPref"], emp.get('notAvailable', {})) for emp in employee_json]
     shifts = shifts_json
-    shift_requests = shift_requests
 
     num_employee = len(employee)
     num_shifts = len(shifts)
@@ -49,6 +49,18 @@ def getSchedule(employee_json, shifts_json, shift_requests, hour_bank, flex_hour
     for n in all_employee:
         for d in all_days:
             model.AddAtMostOne(shifts_var[(n, d, s)] for s in all_shifts)
+
+    # Add constraints for not available shifts
+    for n in all_employee:
+        notAvailableDict = employee[n].notAvailable
+        for day, shifts_na in notAvailableDict.items():
+            d = day_mapping[day]
+            if shifts_na == "all":
+                for s in all_shifts:
+                    model.Add(shifts_var[(n, d, s)] == 0)
+            else:
+                for s in shifts_na:
+                    model.Add(shifts_var[(n, d, s)] == 0)
 
     # Distribute shifts evenly.
     min_shifts_per_employee = (num_shifts * num_days) // num_employee
@@ -153,15 +165,22 @@ def generateSchTable(employees, shifts):
     for emp in range(len(employees)):
         empArray = []
         shiftDict = employees[emp]['shiftPref']
+        notAvailableDict = employees[emp].get('notAvailable', {})
 
         for day in day_mapping:
             shift = generateShiftArray(num_shifts)
+            if day in notAvailableDict:
+                if notAvailableDict[day] == "all":
+                    empArray.append([0] * num_shifts)  # Employee not available all day
+                    continue
+                for na_shift in notAvailableDict[day]:
+                    shift[na_shift] = 0  # Mark shift as not available
             if day in shiftDict:
                 if shiftDict[day] == "any":
                     empArray.append(shift)
                 else:
                     indx = int(shiftDict[day])
-                    if 0 <= indx < num_shifts:
+                    if 0 <= indx < num_shifts and shift[indx] != 0:
                         shift[indx] = 1
                     else:
                         print(f"Warning: Invalid shift index {indx} for employee {employees[emp]['name']} on {day}")
@@ -170,6 +189,3 @@ def generateSchTable(employees, shifts):
                 empArray.append(shift)
         shiftReq.append(empArray)
     return shiftReq
-
-
-
